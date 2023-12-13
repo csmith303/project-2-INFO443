@@ -7,40 +7,21 @@ import "../../common/lib/sjcl"
  * @file functions to encapsulate interface logic for the Password Manager App
  */
 
+
 /**
+ * Encapsulates identifier properties for password and group elements in the Password Manager App.
+ * 
  * @namespace SCA
  * @type {object}
- * @description
- * <p>
- * These functions build upon the SCA namespace to provide an interface for the Password Manager app.
- * They provide a basic level of abstraction above standard DOM manipulation methods.
- * </p>
+ * @property {number} _nextPwdId - An integer used to provide a unique ID for password elements. (Private)
+ * @property {number} _nextGrpId - An integer used to provide a unique ID for group elements. (Private)
+ * @property {string | null} _currentDefaultGrpId - Identifier for the currently selected group for new passwords. If null, the next new password is not grouped. (Private)
  */
-
-/**
- * An integer which is used to provide a unique ID for password elements.
- * 
- * @type Number
- * @private
- */
-SCA._nextPwdId = 0;
-
-/**
- * An integer which is used to provide a unique ID for group elements.
- * 
- * @type Number
- * @private
- */
-SCA._nextGrpId = 0;
-
-/**
- * An identifier for the currently selected group for all new passwords to be added to.
- * If null, next new password not grouped.
- * 
- * @type String
- * @private
- */
-SCA._currentDefaultGrpId = null;
+const SCA = {
+    _nextPwdId: 0,
+    _nextGrpId: 0,
+    _currentDefaultGrpId: null,
+  };
 
 /**
  * Gets the pw-data hidden template for passwords, and caches its value for future use.
@@ -116,7 +97,7 @@ SCA.newPwd = function() {
     //if _currentDefaultGrpId = null, not grouped
     this.addPwd(pwData,this._currentDefaultGrpId);
     this.e("search").value = "";
-    this.filterPwds();
+    this.filterGrpPwd();
 };
 
 
@@ -133,7 +114,7 @@ SCA.newGrp = function() {
 
     this.addGrp(grpData);
     this.e("search").value = "";
-    this.filterPwds();
+    this.filterGrpPwd();
 };
 
 /**
@@ -212,7 +193,7 @@ SCA.addGrp = function(item) {
  * 
  * @param {array} pwds - an array of password JSON objects
  */
-SCA.addPwds = function(pwds) {
+SCA.addGrpPwd = function(pwds) {
     for (var id in pwds) {
         this.addPwd(pwds[id]);
     }
@@ -464,7 +445,7 @@ SCA.getGrp = function(id) {
  * @param {Element} container - optional group container for where to get passwords from
  * @returns {Array} an array of JSON objects representing all passwords within a group or outside all groups.
  */
-SCA.getPwds = function(container) {
+SCA.getGrpPwd = function(container) {
     var pwds = [];
     this.eachPwd(function(id, pwd) {
         pwds.push(pwd);
@@ -607,7 +588,7 @@ SCA.encryptAndEmbedData = function() {
 SCA.getPayload = function() {
               
     var pwdsGrouped = this.getGrps();
-    var pwdsNotGrouped = this.getPwds();   
+    var pwdsNotGrouped = this.getGrpPwd();   
      
     return pwdsNotGrouped.concat(pwdsGrouped);
 };
@@ -672,7 +653,7 @@ SCA.decrypt = function() {
         
         //add non-grouped pwds if any 
         if(grpIdx > 0)
-            SCA.addPwds(out.slice(0, grpIdx));
+            SCA.addGrpPwd(out.slice(0, grpIdx));
                 
         //add groups if any
         if(grpIdx < out.length)            
@@ -695,7 +676,7 @@ SCA.decrypt = function() {
  * <p>
  * Triggered upon key release (onkeyup) 
  */
-SCA.filterPwds = function(event) {
+SCA.filterGrpPwd = function(event) {
         
     var MIN_SEARCH_TERM_LENGTH = 2;
     var searchTerm = this.e("search").value.toLowerCase();
@@ -761,7 +742,7 @@ SCA.filterPwds = function(event) {
  * Clears the search field upon pressing down ESC key (onkeydown).
  * <p>
  * Other keys may trigger this event but will do nothing until released
- * and calling the above filterPwds() handler for onkeyup.
+ * and calling the above filterGrpPwd() handler for onkeyup.
  */
 SCA.filterClear = function (event) {
     // Clear search field on ESC
