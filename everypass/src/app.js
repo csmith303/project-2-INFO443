@@ -96,9 +96,28 @@ SCA.newPwd = function() {
 
     //if _currentDefaultGrpId = null, not grouped
     this.addPwd(pwData,this._currentDefaultGrpId);
+
+    // Incramenting total count
+    this.totalPasswordEntries += 1;
+
+    // Updated DOM to display total count
+    this.updateTotalCount();
+
     this.e("search").value = "";
     this.filterGrpPwd();
 };
+
+/**
+ * Updates the DOM to display the total count of password entries.
+ */
+SCA.updateTotalCount = function() {
+    var totalCount = document.getElementById("total-count");
+    if (totalCount) {
+        totalCount.innerText = "Total Password Entries: " + this.totalPasswordEntries;
+    }
+};
+
+
 
 
 /**
